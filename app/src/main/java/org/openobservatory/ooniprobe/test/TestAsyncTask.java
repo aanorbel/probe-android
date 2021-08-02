@@ -12,6 +12,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import org.openobservatory.engine.LoggerArray;
 import org.openobservatory.engine.OONIContext;
+import org.openobservatory.engine.OONILogger;
 import org.openobservatory.engine.OONISession;
 import org.openobservatory.engine.OONIURLInfo;
 import org.openobservatory.engine.OONIURLListConfig;
@@ -60,12 +61,24 @@ public class TestAsyncTask extends AsyncTask<Void, String, Void> implements Abst
     private ConnectivityManager.NetworkCallback networkCallback;
     private String proxy;
     private boolean store_db = true;
+    private OONISession session;
+    private OONILogger logger;
 
     public TestAsyncTask(Application app, ArrayList<AbstractSuite> testSuites, RunTestService service) {
         this.app = app;
         this.testSuites = testSuites;
         this.serviceRef = new WeakReference<>(service);
         this.proxy = app.getPreferenceManager().getProxyURL();
+        this.logger = new LoggerArray();
+        try {
+            this.session = EngineProvider.get().newSession(EngineProvider.get().getDefaultSessionConfig(
+                    app, BuildConfig.SOFTWARE_NAME, BuildConfig.VERSION_NAME, this.logger, proxy));
+        }
+        catch (Exception e) {
+            //TODO cancel run
+            e.printStackTrace();
+            ThirdPartyServices.logException(e);
+        }
     }
 
     public TestAsyncTask(Application app, ArrayList<AbstractSuite> testSuites, RunTestService service, boolean store_db) {
@@ -145,8 +158,6 @@ public class TestAsyncTask extends AsyncTask<Void, String, Void> implements Abst
     //This uses the wrapper
     private void downloadURLs() {
         try {
-            OONISession session = EngineProvider.get().newSession(EngineProvider.get().getDefaultSessionConfig(
-                    app, BuildConfig.SOFTWARE_NAME, BuildConfig.VERSION_NAME, new LoggerArray(), proxy));
             OONIContext ooniContext = session.newContextWithTimeout(30);
             session.maybeUpdateResources(ooniContext);
             OONIURLListConfig config = new OONIURLListConfig();
@@ -188,6 +199,7 @@ public class TestAsyncTask extends AsyncTask<Void, String, Void> implements Abst
         publishProgress(ERR, error);
     }
 
+    @Deprecated
     @Override
     protected void onProgressUpdate(String... values) {
         //Send broadcast to the RunningActivity
@@ -242,6 +254,7 @@ public class TestAsyncTask extends AsyncTask<Void, String, Void> implements Abst
 
     public synchronized void interrupt() {
         if (currentTest != null && currentTest.canInterrupt()) {
+            //todo remove .interrupt and use context.cancel
             currentTest.interrupt();
         }
         interrupt = true;
