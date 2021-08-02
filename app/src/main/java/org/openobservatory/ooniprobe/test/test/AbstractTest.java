@@ -14,6 +14,7 @@ import androidx.annotation.StringRes;
 import com.google.gson.Gson;
 
 import org.apache.commons.io.FileUtils;
+import org.openobservatory.engine.OONILogger;
 import org.openobservatory.engine.OONIMKTask;
 import org.openobservatory.ooniprobe.common.MKException;
 import org.openobservatory.ooniprobe.common.PreferenceManager;
@@ -62,6 +63,12 @@ public abstract class AbstractTest implements Serializable {
 
     void run(Context c, PreferenceManager pm, Gson gson, Settings settings, Result result, int index, TestCallback testCallback) {
         //Checking for resources before running any test
+
+        //Add session here
+
+        //WebConnectivityConfig config = new WebConnectivityConfig();
+        //config.setInput(“https://www.google.com”);
+
         settings.name = name;
         settings.inputs = inputs;
         settings.setMaxRuntime(max_runtime);
@@ -75,6 +82,17 @@ public abstract class AbstractTest implements Serializable {
             ThirdPartyServices.logException(exc);
             return;
         }
+/*
+        try {
+            results = session.webConnectivity(ctx, sess);
+        } catch (Exception exc) {
+            // TODO: the measurement failed
+            return;
+        }
+        // TODO: process the measurement result
+        // TODO: process bytes sent/received
+*/
+
         while (!task.isDone()){
             try {
                 File logFile = null;
@@ -87,6 +105,7 @@ public abstract class AbstractTest implements Serializable {
                 EventResult event = gson.fromJson(json, EventResult.class);
                 switch (event.key) {
                     case "status.started":
+                        //emit manually
                         if (result.test_group_name.equals(ExperimentalSuite.NAME))
                             testCallback.onStart(name);
                         else
@@ -94,12 +113,15 @@ public abstract class AbstractTest implements Serializable {
                         testCallback.onProgress(Double.valueOf(index * 100).intValue());
                         break;
                     case "status.geoip_lookup":
+                        //DO before test and save
                         saveNetworkInfo(event.value, result, c);
                         break;
                     case "status.report_create":
+                        //doesn't exist anymore, submission at the end
                         reportId = event.value.report_id;
                         break;
                     case "status.measurement_start":
+                        //do at the end
                         if (result != null){
                             Measurement measurement = new Measurement(result, name, reportId);
                             if (event.value.input.length() > 0)
@@ -109,6 +131,7 @@ public abstract class AbstractTest implements Serializable {
                         }
                         break;
                     case "log":
+                        //use logger array
                         if (logFile == null) break;
                         FileUtils.writeStringToFile(
                                 logFile,
@@ -119,6 +142,7 @@ public abstract class AbstractTest implements Serializable {
                         testCallback.onLog(event.value.message);
                         break;
                     case "status.progress":
+                        //pass it to WebConnectivityConfig config
                         testCallback.onProgress(Double.valueOf((index + event.value.percentage) * 100).intValue());
                         if (logFile == null) break;
                         FileUtils.writeStringToFile(
@@ -130,6 +154,7 @@ public abstract class AbstractTest implements Serializable {
                         testCallback.onLog(event.value.message);
                         break;
                     case "measurement":
+                        //at the end
                         Measurement m = measurements.get(event.value.idx);
                         if (m != null) {
                             JsonResult jr = gson.fromJson(event.value.json_str, JsonResult.class);
@@ -200,6 +225,7 @@ public abstract class AbstractTest implements Serializable {
         }
     }
 
+    //use session interrupt
     public boolean canInterrupt(){
         return task == null ? false :  task.canInterrupt();
     }

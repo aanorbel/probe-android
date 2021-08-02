@@ -14,6 +14,7 @@ import org.openobservatory.ooniprobe.test.EngineProvider;
 import java.util.Arrays;
 import java.util.List;
 
+@Deprecated
 public class Settings {
 	@SerializedName("annotations")
 	public final Annotations annotations;
