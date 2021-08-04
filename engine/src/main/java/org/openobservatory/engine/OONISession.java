@@ -1,5 +1,8 @@
 package org.openobservatory.engine;
 
+import oonimkall.WebConnectivityConfig;
+import oonimkall.WebConnectivityResults;
+
 /**
  * OONISession contains shared state for running experiments and/or other
  * related task (e.g. geolocation). Note that a OONISession is not meant to
@@ -31,4 +34,7 @@ public interface OONISession {
 
     /** FetchURLList fetches the list of URLs to test */
     OONIURLListResult fetchURLList(OONIContext ctx, OONIURLListConfig config) throws Exception;
+
+    /** webConnectivity runs a WebConnectivity test and returns WebConnectivityResults */
+    WebConnectivityResults webConnectivity(OONIContext ctx, WebConnectivityConfig config) throws Exception;
 }
