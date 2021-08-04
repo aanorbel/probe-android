@@ -10,6 +10,7 @@ import android.util.Log;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import org.openobservatory.engine.Config;
 import org.openobservatory.engine.LoggerArray;
 import org.openobservatory.engine.OONIContext;
 import org.openobservatory.engine.OONILogger;
@@ -69,7 +70,7 @@ public class TestAsyncTask extends AsyncTask<Void, String, Void> implements Abst
         this.testSuites = testSuites;
         this.serviceRef = new WeakReference<>(service);
         this.proxy = app.getPreferenceManager().getProxyURL();
-        this.logger = new LoggerArray();
+        this.logger = new LoggerApp();
         try {
             this.session = EngineProvider.get().newSession(EngineProvider.get().getDefaultSessionConfig(
                     app, BuildConfig.SOFTWARE_NAME, BuildConfig.VERSION_NAME, this.logger, proxy));
@@ -259,5 +260,25 @@ public class TestAsyncTask extends AsyncTask<Void, String, Void> implements Abst
         }
         interrupt = true;
         sendBroadcast(INT);
+    }
+
+    public final class LoggerApp implements OONILogger {
+        @Override
+        public void debug(String message) {
+            if (!isInterrupted())
+                publishProgress(LOG, message);
+        }
+
+        @Override
+        public void info(String message) {
+            if (!isInterrupted())
+                publishProgress(LOG, message);
+        }
+
+        @Override
+        public void warn(String message) {
+            if (!isInterrupted())
+                publishProgress(LOG, message);
+        }
     }
 }
