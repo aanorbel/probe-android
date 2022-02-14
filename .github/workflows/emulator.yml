@@ -27,7 +27,7 @@ jobs:
         api-level: ${{ matrix.api-level }}
         target: ${{ matrix.target }}
         arch: x86_64
-        profile: Pixel 2
+        profile: Nexus 6
         ram-size: 4096M
         cores: 4
         script: ./gradlew connectedStableFullDebugAndroidTest
