@@ -51,7 +51,8 @@ public class TestRunBroadRequestReceiver extends BroadcastReceiver implements Se
         String value = intent.getStringExtra("value");
         switch (key) {
             case TestAsyncTask.START:
-                listener.onStart(service);
+                if (service!=null)
+                    listener.onStart(service);
                 break;
             case TestAsyncTask.RUN:
                 listener.onRun(value);
@@ -108,7 +109,8 @@ public class TestRunBroadRequestReceiver extends BroadcastReceiver implements Se
         RunTestService.TestBinder b = (RunTestService.TestBinder) binder;
         service = b.getService();
         isBound = true;
-        listener.onStart(service);
+        if (service!=null)
+            listener.onStart(service);
         runtime = ListUtility.sum(Lists.transform(service.task.testSuites, input -> input.getRuntime(preferenceManager)));
     }
 
