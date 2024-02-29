@@ -179,6 +179,6 @@ jobs:
           CREDENTIAL_FILE_CONTENT: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
           FIREBASE_APP_ID: ${{secrets.FIREBASE_APP_ID}}
         run: |
-          cat <<< $CREDENTIAL_FILE_CONTENT > service_credentials_content.json
+          echo $CREDENTIAL_FILE_CONTENT >> service_credentials_content.json
           export GOOGLE_APPLICATION_CREDENTIALS="service_credentials_content.json"
           firebase appdistribution:distribute devFull/debug/app-dev-full-debug.apk  --app $FIREBASE_APP_ID  --release-notes $(git log -1 --pretty=short) --testers testers
