@@ -168,13 +168,11 @@ jobs:
           name: DevFullDebugApk
 
       - name: Upload artifact to Firebase App Distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1.7.0
-        id: uploadArtifact
-        with:
-          appId: ${{secrets.FIREBASE_APP_ID}}
-          serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
-          groups: testers
-          file: devFull/debug/app-dev-full-debug.apk
-      - name: Write Summary
+        env:
+          CREDENTIAL_FILE_CONTENT: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
+          FIREBASE_APP_ID: ${{secrets.FIREBASE_APP_ID}}
         run: |
-          echo "View this release in the Firebase console: ${{ steps.uploadArtifact.outputs.FIREBASE_CONSOLE_URI }}" >> $GITHUB_STEP_SUMMARY
+          yarn global add firebase-tools
+          cat <<< "${CREDENTIAL_FILE_CONTENT}" > service_credentials_content.json
+          export GOOGLE_APPLICATION_CREDENTIALS="service_credentials_content.json"
+          firebase appdistribution:distribute devFull/debug/app-dev-full-debug.apk  --app $FIREBASE_APP_ID  --release-notes $(git log -1 --pretty=short) --testers testers
